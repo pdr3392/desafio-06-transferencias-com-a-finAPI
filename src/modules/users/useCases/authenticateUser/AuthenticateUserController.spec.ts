@@ -8,7 +8,7 @@ import "../../../../database/index";
 
 let connection: Connection;
 
-describe("Create User Controller", () => {
+describe("Authenticate User Controller", () => {
   beforeAll(async () => {
     connection = await createConnection();
     await connection.runMigrations();
@@ -28,23 +28,27 @@ describe("Create User Controller", () => {
     await connection.close();
   });
 
-  it("should be able to create a new user", async () => {
-    const response = await request(app).post("/api/v1/users").send({
+  it("should be able to authenticate an user", async () => {
+    await request(app).post("/api/v1/users").send({
       name: "Pedro",
       email: "phrcorreia3392@gmail.com",
       password: "123456",
     });
 
-    expect(response.statusCode).toBe(201);
+    const responseToken = await request(app).post("/api/v1/sessions").send({
+      email: "phrcorreia3392@gmail.com",
+      password: "123456",
+    });
+
+    expect(responseToken.body).toHaveProperty("token");
   });
 
-  it("should not be able to create a new user with an already picked up email address", async () => {
-    const response = await request(app).post("/api/v1/users").send({
-      name: "Pedro",
-      email: "phrcorreia3392@gmail.com",
+  it("should not be able to authenticate an inexistent user", async () => {
+    const responseToken = await request(app).post("/api/v1/sessions").send({
+      email: "fake-test@gmail.com",
       password: "123456",
     });
 
-    expect(response.statusCode).toBe(400);
+    expect(responseToken.statusCode).toBe(401);
   });
 });
