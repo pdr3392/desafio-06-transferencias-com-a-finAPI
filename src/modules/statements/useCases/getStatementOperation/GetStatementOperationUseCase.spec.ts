@@ -67,7 +67,16 @@ describe("Get Statement Operation", () => {
     expect(response).toHaveProperty("description");
   });
 
-  it("should not be able to retrieve a non existent statement operation", async () => {
+  it("should not be able to retrieve a statement from an inexistent user", () => {
+    expect(async () => {
+      await getStatementOperationUseCase.execute({
+        user_id: "fake-user-id",
+        statement_id: "fake-statement-id",
+      });
+    }).rejects.toBeInstanceOf(GetStatementOperationError.UserNotFound);
+  });
+
+  it("should not be able to retrieve a non existent statement", async () => {
     expect(async () => {
       await createUserUseCase.execute({
         name: "Test User",
@@ -87,41 +96,12 @@ describe("Get Statement Operation", () => {
         description: "statement test",
       };
 
-      const newStatement = await createStatementUseCase.execute(statement);
+      await createStatementUseCase.execute(statement);
 
-      const response = await getStatementOperationUseCase.execute({
+      await getStatementOperationUseCase.execute({
         user_id: authenticateInfo.user.id,
         statement_id: "fake-statement-id",
       });
     }).rejects.toBeInstanceOf(GetStatementOperationError.StatementNotFound);
-  });
-
-  it("should not be able to retrieve a statement operation from a non existent user", async () => {
-    expect(async () => {
-      await createUserUseCase.execute({
-        name: "Test User",
-        email: "test@mail.com",
-        password: "123456",
-      });
-
-      const authenticateInfo = await authenticateUserUseCase.execute({
-        email: "test@mail.com",
-        password: "123456",
-      });
-
-      const statement: ICreateStatementDTO = {
-        user_id: authenticateInfo.user.id,
-        amount: 100,
-        type: OperationType.DEPOSIT,
-        description: "statement test",
-      };
-
-      const newStatement = await createStatementUseCase.execute(statement);
-
-      await getStatementOperationUseCase.execute({
-        user_id: "fake-user-id",
-        statement_id: newStatement.id,
-      });
-    }).rejects.toBeInstanceOf(GetStatementOperationError.UserNotFound);
   });
 });
