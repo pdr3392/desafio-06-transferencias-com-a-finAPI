@@ -13,6 +13,7 @@ import { User } from "../../users/entities/User";
 export enum OperationType {
   DEPOSIT = "deposit",
   WITHDRAW = "withdraw",
+  TRANSFER = "transfer",
 }
 
 @Entity("statements")
@@ -29,6 +30,9 @@ export class Statement {
 
   @Column()
   description: string;
+
+  @Column()
+  sender_id?: string;
 
   @Column("decimal", { precision: 5, scale: 2 })
   amount: number;
